@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nurse Dashboard - My Family Nurse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body class="app-shell min-h-screen bg-[#03030f] text-white">
+    <div class="pointer-events-none fixed -left-32 top-0 w-80 h-80 bg-blue-500/20 blur-3xl rounded-full"></div>
+    <div class="pointer-events-none fixed -right-16 bottom-0 w-96 h-96 bg-purple-500/25 blur-3xl rounded-full"></div>
+
+    <div class="flex min-h-screen relative">
+        <aside
+            class="hidden lg:flex lg:flex-col lg:w-72 bg-white/5 border-r border-white/10 backdrop-blur-2xl p-6 fixed inset-y-0">
+            <div class="flex items-center gap-3 mb-10">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-2xl">
+                    👩‍⚕️
+                </div>
+                <div>
+                    <p class="text-xs uppercase tracking-[0.4em] text-white/60">Nurse</p>
+                    <p class="text-lg font-semibold">My Family Nurse</p>
+                </div>
+            </div>
+
+            <nav class="flex-1 space-y-2 text-sm font-semibold">
+                <a href="#" data-nav="schedule" onclick="showSection('schedule', this); return false;"
+                    class="nav-link w-full justify-start active">📅 My Schedule</a>
+                <a href="#" data-nav="completed" onclick="showSection('completed', this); return false;"
+                    class="nav-link w-full justify-start">✅ Completed Visits</a>
+                <a href="#" data-nav="profile" onclick="showSection('profile', this); return false;"
+                    class="nav-link w-full justify-start">👤 Profile</a>
+            </nav>
+
+            <div class="border-t border-white/10 pt-4 mt-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="avatar">👩‍⚕️</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm truncate" id="userNameDisplay">Nurse</p>
+                        <p class="text-xs text-white/70 truncate" id="userEmailDisplay">nurse@myFamNurse.com</p>
+                    </div>
+                </div>
+                <button onclick="logoutUser()" class="btn btn-danger w-full btn-sm">Logout</button>
+            </div>
+        </aside>
+
+        <div class="flex-1 w-full lg:pl-72">
+            <header class="sticky top-0 z-40 bg-white/5 backdrop-blur-2xl border-b border-white/10">
+                <div class="px-6 py-5 flex flex-wrap gap-4 items-center justify-between">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-white/60">Field Ops</p>
+                        <h1 class="text-2xl font-bold text-white" id="pageTitle">My Schedule</h1>
+                    </div>
+                    <div class="flex items-center gap-4 text-sm text-white/70">
+                        <div class="text-right">
+                            <p class="uppercase text-[0.55rem] tracking-[0.6em] text-white/50">On duty</p>
+                            <p class="text-lg font-semibold" id="welcomeName">Nurse</p>
+                        </div>
+                        <div class="rounded-2xl bg-white/10 px-4 py-3 text-white">🌤️
+                            <span class="ml-2 text-white/70">Stay hydrated</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="px-6 py-10 space-y-10">
+                <section id="schedule-section" class="section active space-y-6">
+                    <div class="flex flex-wrap gap-4 justify-between items-end">
+                        <div>
+                            <p class="text-sm uppercase tracking-[0.4em] text-white/60">Upcoming</p>
+                            <h2 class="text-3xl font-bold text-white">Assigned bookings</h2>
+                            <p class="text-white/60 max-w-xl">Triage requests update live; confirm completion with
+                                visit notes.</p>
+                        </div>
+                        <select id="filterStatus" onchange="filterBookings()"
+                            class="px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-sm placeholder-white/50">
+                            <option value="">All statuses</option>
+                            <option value="assigned">Assigned</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6" id="bookingsGrid">
+                        <p class="text-white/60 col-span-2">Loading your schedule...</p>
+                    </div>
+                </section>
+
+                <section id="completed-section" class="section hidden space-y-6">
+                    <div>
+                        <p class="text-sm uppercase tracking-[0.4em] text-white/60">Archive</p>
+                        <h2 class="text-3xl font-bold text-white">Completed visits</h2>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6" id="completedGrid">
+                        <p class="text-white/60 col-span-2">Loading completed visits...</p>
+                    </div>
+                </section>
+
+                <section id="profile-section" class="section hidden space-y-8">
+                    <div>
+                        <p class="text-sm uppercase tracking-[0.4em] text-white/60">Profile</p>
+                        <h2 class="text-3xl font-bold text-white">Personal workspace</h2>
+                    </div>
+                    <div class="grid lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 card">
+                            <h3 class="text-xl font-bold text-gray-900 mb-6">Personal Information</h3>
+                            <div class="space-y-6">
+                                <div class="form-group">
+                                    <label for="profileFullName">Full Name</label>
+                                    <input type="text" id="profileFullName" placeholder="Your full name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profileEmail">Email</label>
+                                    <input type="email" id="profileEmail" placeholder="Your email" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profilePhone">Phone Number</label>
+                                    <input type="tel" id="profilePhone" placeholder="Your phone number">
+                                </div>
+                                <button onclick="saveProfile()" class="btn btn-gradient">Save Changes</button>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="card">
+                                <p class="text-gray-600 text-sm mb-1">Total visits</p>
+                                <p class="text-4xl font-bold text-green-600" id="stat-total-visits">0</p>
+                                <p class="text-xs text-gray-500">Lifetime completions</p>
+                            </div>
+                            <div class="card">
+                                <p class="text-gray-600 text-sm mb-1">Active assignments</p>
+                                <p class="text-4xl font-bold text-blue-600" id="stat-assigned">0</p>
+                                <p class="text-xs text-gray-500">Awaiting completion</p>
+                            </div>
+                            <div class="card">
+                                <p class="text-gray-600 text-sm mb-1">This month</p>
+                                <p class="text-4xl font-bold text-purple-600" id="stat-this-month">0</p>
+                                <p class="text-xs text-gray-500">Completed visits</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Booking Details Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="modal-header">
+                <h3 class="text-2xl font-bold">Booking Details</h3>
+                <button onclick="closeModal('bookingModal')" class="text-2xl">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="bookingDetailsContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('bookingModal')" class="btn btn-secondary btn-sm">Close</button>
+                <button id="markCompleteBtn" onclick="markBookingComplete()" class="btn btn-success btn-sm"
+                    style="display:none;">Mark as Complete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Visit Notes Modal -->
+    <div id="visitNotesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-2xl font-bold">Add Visit Notes</h3>
+                <button onclick="closeModal('visitNotesModal')" class="text-2xl">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="visitNotes">Clinical Notes</label>
+                    <textarea id="visitNotes" placeholder="Record your clinical observations and treatment provided..."
+                        class="min-h-48"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('visitNotesModal')" class="btn btn-secondary btn-sm">Cancel</button>
+                <button onclick="saveVisitNotes()" class="btn btn-primary btn-sm">Save Notes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/auth-service.js"></script>
+    <script src="../js/booking-service.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        let currentBookingId = null;
+        let allBookings = [];
+
+        // Check authorization on page load
+        window.addEventListener('load', () => {
+            checkAuthorization(['nurse']);
+            loadNurseData();
+            updateUserDisplay();
+        });
+
+        // Update user display
+        function updateUserDisplay() {
+            const user = authService.getCurrentUser();
+            if (user) {
+                document.getElementById('userEmailDisplay').textContent = user.email;
+                db.collection('users').doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        const fullName = doc.data().fullName;
+                        document.getElementById('userNameDisplay').textContent = fullName;
+                        document.getElementById('welcomeName').textContent = fullName.split(' ')[0];
+                        document.getElementById('profileFullName').value = fullName;
+                        document.getElementById('profileEmail').value = user.email;
+                        document.getElementById('profilePhone').value = doc.data().phone || '';
+                    }
+                });
+            }
+        }
+
+        // Load nurse data
+        async function loadNurseData() {
+            try {
+                const user = authService.getCurrentUser();
+                await loadBookings(user.uid);
+                await loadStatistics();
+            } catch (error) {
+                console.error('Error loading nurse data:', error);
+                showNotification('Error loading data', 'error');
+            }
+        }
+
+        // Load nurse's bookings
+        async function loadBookings(nurseId) {
+            try {
+                const bookings = await bookingService.getNurseBookings(nurseId);
+                allBookings = bookings;
+                displayBookings(bookings);
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                showNotification('Error loading bookings', 'error');
+            }
+        }
+
+        // Display bookings
+        function displayBookings(bookings) {
+            const grid = document.getElementById('bookingsGrid');
+
+            if (bookings.length === 0) {
+                grid.innerHTML = '<p class="text-gray-500 col-span-2">No bookings assigned yet</p>';
+                return;
+            }
+
+            grid.innerHTML = bookings.map(booking => `
+                <div class="card hover:shadow-lg transition-all">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-bold text-gray-900">${booking.patient.name}</h3>
+                        <span class="badge ${booking.status === 'completed' ? 'badge-success' :
+                    booking.status === 'assigned' ? 'badge-primary' :
+                        'badge-gray'
+                }">${booking.status}</span>
+                    </div>
+
+                    <div class="space-y-2 mb-4 text-sm text-gray-600">
+                        <p>📋 <strong>Service:</strong> ${booking.service}</p>
+                        <p>📅 <strong>Date:</strong> ${formatDate(booking.preferredDate)}</p>
+                        <p>⏰ <strong>Time:</strong> ${booking.preferredTime}</p>
+                        <p>📍 <strong>Address:</strong> ${booking.address}</p>
+                    </div>
+
+                    ${booking.medicalNotes ? `<p class="text-sm text-gray-600 mb-4">📝 <strong>Notes:</strong> ${booking.medicalNotes}</p>` : ''}
+
+                    <div class="flex gap-2">
+                        <button onclick="openBookingModal('${booking.id}')" class="btn btn-primary btn-sm flex-1">View Details</button>
+                        ${booking.status === 'assigned' ? `
+                            <button onclick="openVisitNotesModal('${booking.id}')" class="btn btn-success btn-sm flex-1">Complete Visit</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter bookings
+        function filterBookings() {
+            const status = document.getElementById('filterStatus').value;
+            const filtered = status ? allBookings.filter(b => b.status === status) : allBookings;
+            displayBookings(filtered);
+        }
+
+        // Open booking modal
+        async function openBookingModal(bookingId) {
+            try {
+                const booking = await bookingService.getBooking(bookingId);
+                currentBookingId = bookingId;
+
+                const content = document.getElementById('bookingDetailsContent');
+                content.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="font-semibold text-gray-700">Patient Name</label>
+                                <p class="text-gray-900">${booking.patient.name}</p>
+                            </div>
+                            <div>
+                                <label class="font-semibold text-gray-700">Phone</label>
+                                <p class="text-gray-900">${booking.patient.phone}</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold text-gray-700">Service</label>
+                            <p class="text-gray-900">${booking.service}</p>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="font-semibold text-gray-700">Date</label>
+                                <p class="text-gray-900">${formatDate(booking.preferredDate)}</p>
+                            </div>
+                            <div>
+                                <label class="font-semibold text-gray-700">Time</label>
+                                <p class="text-gray-900">${booking.preferredTime}</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold text-gray-700">Address</label>
+                            <p class="text-gray-900">${booking.address}</p>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold text-gray-700">Medical Notes</label>
+                            <p class="text-gray-900">${booking.medicalNotes || 'No additional notes'}</p>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold text-gray-700">Date of Birth</label>
+                            <p class="text-gray-900">${booking.patient.dob || 'Not provided'}</p>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold text-gray-700">Status</label>
+                            <p class="text-gray-900 capitalize">${booking.status}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Show complete button only for assigned bookings
+                const completeBtn = document.getElementById('markCompleteBtn');
+                if (booking.status === 'assigned') {
+                    completeBtn.style.display = 'block';
+                } else {
+                    completeBtn.style.display = 'none';
+                }
+
+                openModal('bookingModal');
+            } catch (error) {
+                console.error('Error opening booking modal:', error);
+                showNotification('Error loading booking details', 'error');
+            }
+        }
+
+        // Open visit notes modal
+        async function openVisitNotesModal(bookingId) {
+            currentBookingId = bookingId;
+            document.getElementById('visitNotes').value = '';
+            openModal('visitNotesModal');
+        }
+
+        // Save visit notes and mark as complete
+        async function saveVisitNotes() {
+            try {
+                const notes = document.getElementById('visitNotes').value;
+
+                if (!notes.trim()) {
+                    showNotification('Please enter visit notes', 'warning');
+                    return;
+                }
+
+                showLoading('Saving visit notes...');
+
+                // Add visit log
+                await bookingService.addVisitLog(currentBookingId, authService.currentUser.uid, notes);
+
+                // Mark booking as completed
+                await bookingService.updateBookingStatus(currentBookingId, 'completed');
+
+                hideLoading();
+                showNotification('Visit marked as completed', 'success');
+                closeModal('visitNotesModal');
+                closeModal('bookingModal');
+
+                // Reload bookings
+                const user = authService.getCurrentUser();
+                await loadBookings(user.uid);
+            } catch (error) {
+                hideLoading();
+                showNotification('Error saving visit notes: ' + error.message, 'error');
+            }
+        }
+
+        // Load completed visits
+        async function loadCompletedVisits() {
+            try {
+                const user = authService.getCurrentUser();
+                const snapshot = await db.collection('bookings')
+                    .where('assignedNurseId', '==', user.uid)
+                    .where('status', '==', 'completed')
+                    .orderBy('completedAt', 'desc')
+                    .get();
+
+                const completed = [];
+                for (const doc of snapshot.docs) {
+                    const booking = doc.data();
+                    booking.id = doc.id;
+
+                    // Fetch patient details
+                    if (booking.patientId) {
+                        const patientDoc = await db.collection('patients').doc(booking.patientId).get();
+                        if (patientDoc.exists) {
+                            booking.patient = { id: booking.patientId, ...patientDoc.data() };
+                        }
+                    }
+
+                    completed.push(booking);
+                }
+
+                const grid = document.getElementById('completedGrid');
+
+                if (completed.length === 0) {
+                    grid.innerHTML = '<p class="text-gray-500 col-span-2">No completed visits yet</p>';
+                    return;
+                }
+
+                grid.innerHTML = completed.map(booking => `
+                    <div class="card border-l-4 border-green-500">
+                        <h3 class="text-lg font-bold text-gray-900 mb-3">${booking.patient.name}</h3>
+                        <div class="space-y-2 mb-4 text-sm text-gray-600">
+                            <p>📋 <strong>Service:</strong> ${booking.service}</p>
+                            <p>📅 <strong>Completed:</strong> ${formatDateTime(booking.completedAt)}</p>
+                            <p>✅ <strong>Status:</strong> Completed</p>
+                        </div>
+                        <button onclick="viewVisitNotes('${booking.id}')" class="btn btn-outline btn-sm w-full">View Notes</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading completed visits:', error);
+            }
+        }
+
+        // View visit notes
+        async function viewVisitNotes(bookingId) {
+            try {
+                const logs = await bookingService.getVisitLogs(bookingId);
+
+                if (logs.length === 0) {
+                    showNotification('No visit notes found', 'info');
+                    return;
+                }
+
+                const notesHtml = logs.map(log => `
+                    <div class="p-4 bg-gray-50 rounded-lg mb-4">
+                        <p class="font-semibold text-gray-900 mb-2">${log.nurse.fullName}</p>
+                        <p class="text-gray-700 mb-2">${log.notes}</p>
+                        <p class="text-xs text-gray-500">${formatDateTime(log.createdAt)}</p>
+                    </div>
+                `).join('');
+
+                // Create a simple modal
+                alert('Visit Notes:\n\n' + logs.map(log => log.notes).join('\n\n'));
+            } catch (error) {
+                console.error('Error viewing visit notes:', error);
+                showNotification('Error loading visit notes', 'error');
+            }
+        }
+
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const user = authService.getCurrentUser();
+
+                // Total completed visits
+                const completedSnapshot = await db.collection('bookings')
+                    .where('assignedNurseId', '==', user.uid)
+                    .where('status', '==', 'completed')
+                    .get();
+
+                // Assigned bookings
+                const assignedSnapshot = await db.collection('bookings')
+                    .where('assignedNurseId', '==', user.uid)
+                    .where('status', '==', 'assigned')
+                    .get();
+
+                // This month's visits
+                const today = new Date();
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+                const monthSnapshot = await db.collection('bookings')
+                    .where('assignedNurseId', '==', user.uid)
+                    .where('status', '==', 'completed')
+                    .where('completedAt', '>=', firstDay)
+                    .where('completedAt', '<=', lastDay)
+                    .get();
+
+                document.getElementById('stat-total-visits').textContent = completedSnapshot.size;
+                document.getElementById('stat-assigned').textContent = assignedSnapshot.size;
+                document.getElementById('stat-this-month').textContent = monthSnapshot.size;
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        // Save profile
+        async function saveProfile() {
+            try {
+                const user = authService.getCurrentUser();
+                showLoading('Saving profile...');
+
+                await db.collection('users').doc(user.uid).update({
+                    fullName: document.getElementById('profileFullName').value,
+                    phone: document.getElementById('profilePhone').value
+                });
+
+                hideLoading();
+                showNotification('Profile updated successfully', 'success');
+            } catch (error) {
+                hideLoading();
+                showNotification('Error saving profile', 'error');
+            }
+        }
+
+        // Show section
+        function showSection(sectionId, triggerEl) {
+            document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+            const targetSection = document.getElementById(`${sectionId}-section`);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+
+            const titles = {
+                schedule: 'My Schedule',
+                completed: 'Completed Visits',
+                profile: 'My Profile'
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionId] || 'My Schedule';
+
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            if (triggerEl) {
+                triggerEl.classList.add('active');
+            } else {
+                const fallback = document.querySelector(`[data-nav="${sectionId}"]`);
+                if (fallback) {
+                    fallback.classList.add('active');
+                }
+            }
+
+            if (sectionId === 'completed') {
+                loadCompletedVisits();
+            }
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Logout
+        async function logoutUser() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    showLoading('Logging out...');
+                    await authService.logout();
+                    hideLoading();
+                    window.location.href = '../pages/login.html';
+                } catch (error) {
+                    hideLoading();
+                    showNotification('Error logging out', 'error');
+                }
+            }
+        }
+
+        // Auto-reload bookings every 30 seconds
+        setInterval(() => {
+            const user = authService.getCurrentUser();
+            if (user) {
+                loadBookings(user.uid);
+            }
+        }, 30000);
+    </script>
+</body>
+
+</html>

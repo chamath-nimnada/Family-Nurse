@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Family Nurse • Project Atlas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="app-shell min-h-screen bg-[#03030f] text-white">
+    <div class="pointer-events-none fixed -left-20 top-0 w-80 h-80 bg-blue-500/20 blur-3xl rounded-full"></div>
+    <div class="pointer-events-none fixed -right-24 bottom-0 w-96 h-96 bg-purple-500/25 blur-3xl rounded-full"></div>
+
+    <div class="max-w-6xl mx-auto px-6 py-16 space-y-16">
+        <header class="text-center space-y-6">
+            <div class="hero-badge mx-auto text-white/80">
+                <span>♥</span>
+                <span class="tracking-[0.4em] uppercase text-xs">Project atlas</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold">My Family Nurse build map</h1>
+            <p class="text-white/70 max-w-3xl mx-auto">All experience surfaces, scripts, and documentation for the
+                bilingual home-care platform. Use this hub to navigate between public pages, internal dashboards, and
+                Firebase services.</p>
+        </header>
+
+        <section class="space-y-6">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.4em] text-white/60">Experience</p>
+                    <h2 class="text-3xl font-bold">Core interfaces</h2>
+                </div>
+                <span class="badge-pill bg-white/10 border border-white/15">Updated January 2026</span>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6">
+                <article class="card bg-white/10 border-white/10 text-white">
+                    <div class="flex items-center gap-3 mb-4 text-sm text-white/70">
+                        <span class="text-2xl">🏠</span>
+                        Public marketing surface
+                    </div>
+                    <h3 class="text-2xl font-semibold text-white mb-2">index.html</h3>
+                    <p class="text-white/70 mb-6">Story-driven landing page with services, impact proof, FAQ, and
+                        booking form.</p>
+                    <a href="index.html" class="btn btn-gradient btn-sm w-full">Launch page</a>
+                </article>
+                <article class="card bg-white/10 border-white/10 text-white">
+                    <div class="flex items-center gap-3 mb-4 text-sm text-white/70">
+                        <span class="text-2xl">🔐</span>
+                        Staff access portal
+                    </div>
+                    <h3 class="text-2xl font-semibold text-white mb-2">pages/login.html</h3>
+                    <p class="text-white/70 mb-6">Glassmorphic auth card with Remember Me, bilingual cues, and demo
+                        credentials.</p>
+                    <a href="pages/login.html" class="btn btn-gradient btn-sm w-full">Open login</a>
+                </article>
+                <article class="card bg-white/10 border-white/10 text-white">
+                    <div class="flex items-center gap-3 mb-4 text-sm text-white/70">
+                        <span class="text-2xl">📊</span>
+                        Admin control tower
+                    </div>
+                    <h3 class="text-2xl font-semibold text-white mb-2">pages/admin-dashboard.html</h3>
+                    <p class="text-white/70 mb-6">Stats, bookings, roster, patients, audit logs, and account settings
+                        for leadership.</p>
+                    <a href="pages/admin-dashboard.html" class="btn btn-gradient btn-sm w-full">Enter dashboard</a>
+                </article>
+                <article class="card bg-white/10 border-white/10 text-white">
+                    <div class="flex items-center gap-3 mb-4 text-sm text-white/70">
+                        <span class="text-2xl">👩‍⚕️</span>
+                        Nurse field companion
+                    </div>
+                    <h3 class="text-2xl font-semibold text-white mb-2">pages/nurse-dashboard.html</h3>
+                    <p class="text-white/70 mb-6">Schedule board, visit completion workflow, notes, and personal
+                        insights.</p>
+                    <a href="pages/nurse-dashboard.html" class="btn btn-gradient btn-sm w-full">Go to nurse view</a>
+                </article>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <div>
+                <p class="text-sm uppercase tracking-[0.4em] text-white/60">Stack</p>
+                <h2 class="text-3xl font-bold">Operational scripts</h2>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-gray-900">
+                <div class="card">
+                    <p class="text-xs uppercase text-gray-500 mb-1">Firebase config</p>
+                    <h3 class="text-xl font-semibold">js/firebase-config.js</h3>
+                    <p class="text-sm text-gray-600 mt-2">Drop in your Firebase keys to power auth + Firestore.</p>
+                </div>
+                <div class="card">
+                    <p class="text-xs uppercase text-gray-500 mb-1">Auth layer</p>
+                    <h3 class="text-xl font-semibold">js/auth-service.js</h3>
+                    <p class="text-sm text-gray-600 mt-2">Handles login, role detection, and protected routing.</p>
+                </div>
+                <div class="card">
+                    <p class="text-xs uppercase text-gray-500 mb-1">Bookings API</p>
+                    <h3 class="text-xl font-semibold">js/booking-service.js</h3>
+                    <p class="text-sm text-gray-600 mt-2">CRUD for bookings, stats, and visit logs.</p>
+                </div>
+                <div class="card">
+                    <p class="text-xs uppercase text-gray-500 mb-1">Utilities</p>
+                    <h3 class="text-xl font-semibold">js/utils.js</h3>
+                    <p class="text-sm text-gray-600 mt-2">Notifications, loaders, translations, helpers.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <div class="flex flex-wrap justify-between gap-4 items-center">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.4em] text-white/60">Guides</p>
+                    <h2 class="text-3xl font-bold">Docs & governance</h2>
+                </div>
+                <span class="text-white/60 text-sm">All files live in repo root</span>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="card">
+                    <h3 class="text-xl font-semibold">README.md</h3>
+                    <p class="text-gray-600 mt-2">Project story, features, and onboarding overview.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-semibold">SETUP_GUIDE.md</h3>
+                    <p class="text-gray-600 mt-2">Step-by-step Firebase + hosting instructions.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-semibold">FIRESTORE_RULES.txt</h3>
+                    <p class="text-gray-600 mt-2">Minimum viable security policies for production.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card glass-panel text-center text-white p-12">
+            <p class="section-heading text-white/80">Quick Start</p>
+            <h2 class="text-3xl font-bold">Deploy or test locally</h2>
+            <div class="grid md:grid-cols-3 gap-6 mt-8 text-left">
+                <div class="bg-white/5 rounded-2xl p-6 border border-white/10">
+                    <p class="text-sm text-white/60">01 • Configure Firebase</p>
+                    <p class="text-white mt-3 text-sm">Use SETUP_GUIDE.md then update <span
+                            class="font-semibold">js/firebase-config.js</span>.</p>
+                </div>
+                <div class="bg-white/5 rounded-2xl p-6 border border-white/10">
+                    <p class="text-sm text-white/60">02 • Run locally</p>
+                    <p class="text-white mt-3 text-sm">`python -m http.server 8000` from project root.</p>
+                </div>
+                <div class="bg-white/5 rounded-2xl p-6 border border-white/10">
+                    <p class="text-sm text-white/60">03 • Demo access</p>
+                    <p class="text-white mt-3 text-sm">Admin: admin@myFamNurse.com / admin@123<br>Nurse:
+                        nurse@myFamNurse.com / nurse@123</p>
+                </div>
+            </div>
+            <div class="mt-8 flex flex-wrap justify-center gap-4">
+                <a href="index.html" class="btn btn-gradient">View public site</a>
+                <a href="pages/login.html" class="btn btn-outline">Login to dashboards</a>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

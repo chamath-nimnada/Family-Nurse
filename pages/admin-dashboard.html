@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - My Family Nurse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body class="app-shell min-h-screen bg-[#03030f] text-white">
+    <div class="pointer-events-none fixed -left-32 top-10 w-96 h-96 bg-blue-500/20 blur-3xl rounded-full"></div>
+    <div class="pointer-events-none fixed -right-8 bottom-0 w-96 h-96 bg-purple-500/20 blur-3xl rounded-full"></div>
+
+    <div class="flex min-h-screen relative">
+        <!-- Sidebar -->
+        <aside
+            class="hidden lg:flex lg:flex-col lg:w-72 bg-white/5 border-r border-white/10 backdrop-blur-2xl p-6 fixed inset-y-0">
+            <div class="flex items-center gap-3 mb-10">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-2xl">
+                    ♥</div>
+                <div>
+                    <p class="text-xs uppercase tracking-[0.4em] text-white/60">Admin</p>
+                    <p class="text-lg font-semibold">My Family Nurse</p>
+                </div>
+            </div>
+
+            <nav class="flex-1 space-y-2 text-sm font-semibold">
+                <a href="#" data-nav="dashboard" onclick="showSection('dashboard', this); return false;"
+                    class="nav-link w-full justify-start active">📊 Dashboard</a>
+                <a href="#" data-nav="bookings" onclick="showSection('bookings', this); return false;"
+                    class="nav-link w-full justify-start">📅 Bookings</a>
+                <a href="#" data-nav="nurses" onclick="showSection('nurses', this); return false;"
+                    class="nav-link w-full justify-start">👩‍⚕️ Nurses</a>
+                <a href="#" data-nav="patients" onclick="showSection('patients', this); return false;"
+                    class="nav-link w-full justify-start">👥 Patients</a>
+                <a href="#" data-nav="activity" onclick="showSection('activity', this); return false;"
+                    class="nav-link w-full justify-start">📝 Activity Log</a>
+                <a href="#" data-nav="settings" onclick="showSection('settings', this); return false;"
+                    class="nav-link w-full justify-start">⚙️ Settings</a>
+            </nav>
+
+            <div class="border-t border-white/10 pt-4 mt-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="avatar">👤</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm truncate" id="userNameDisplay">Admin</p>
+                        <p class="text-xs text-white/70 truncate" id="userEmailDisplay">admin@myFamNurse.com</p>
+                    </div>
+                </div>
+                <button onclick="logoutUser()" class="btn btn-danger w-full btn-sm">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main content -->
+        <div class="flex-1 w-full lg:pl-72">
+            <!-- Top nav -->
+            <header class="sticky top-0 z-40 bg-white/5 backdrop-blur-2xl border-b border-white/10">
+                <div class="px-6 py-5 flex flex-wrap gap-4 items-center justify-between">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-white/60">Control Center</p>
+                        <h1 class="text-2xl font-bold text-white" id="pageTitle">Dashboard</h1>
+                    </div>
+                    <div class="flex items-center gap-4 w-full sm:w-auto">
+                        <div class="relative flex-1 sm:flex-none">
+                            <input type="text" placeholder="Search bookings, nurses..."
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm placeholder-white/40">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40">⌕</span>
+                        </div>
+                        <button class="relative rounded-2xl bg-white/10 px-4 py-3">🔔<span
+                                class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span></button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page content -->
+            <main class="px-6 py-10 space-y-10">
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="section active space-y-10">
+                    <div class="grid md:grid-cols-5 gap-6">
+                        <div class="card bg-white/10 border-white/10">
+                            <p class="text-white/60 text-sm mb-2">Total Bookings</p>
+                            <p class="text-4xl font-bold" id="stat-total">0</p>
+                        </div>
+                        <div class="card bg-white/10 border-white/10">
+                            <p class="text-white/60 text-sm mb-2">Pending</p>
+                            <p class="text-4xl font-bold text-yellow-300" id="stat-pending">0</p>
+                        </div>
+                        <div class="card bg-white/10 border-white/10">
+                            <p class="text-white/60 text-sm mb-2">Completed</p>
+                            <p class="text-4xl font-bold text-green-300" id="stat-completed">0</p>
+                        </div>
+                        <div class="card bg-white/10 border-white/10">
+                            <p class="text-white/60 text-sm mb-2">Active Nurses</p>
+                            <p class="text-4xl font-bold text-purple-300" id="stat-nurses">0</p>
+                        </div>
+                        <div class="card bg-white/10 border-white/10">
+                            <p class="text-white/60 text-sm mb-2">Today's Visits</p>
+                            <p class="text-4xl font-bold text-sky-300" id="stat-today">0</p>
+                        </div>
+                    </div>
+
+                    <div class="grid lg:grid-cols-2 gap-6">
+                        <div class="card bg-white/10 border-white/10">
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="text-2xl text-white font-bold">Recent Bookings</h2>
+                                <span class="text-sm text-white/50">Live feed</span>
+                            </div>
+                            <div id="recentBookingsContainer" class="space-y-3">
+                                <p class="text-white/60">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="card bg-white/10 border-white/10">
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="text-2xl text-white font-bold">Activity Feed</h2>
+                                <span class="text-sm text-white/50">Last 10 entries</span>
+                            </div>
+                            <div id="activityFeedContainer" class="space-y-3">
+                                <p class="text-white/60">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="card bg-gradient-to-br from-blue-500/20 to-purple-500/10 border-white/10">
+                            <p class="text-xs uppercase text-white/70">Quick action</p>
+                            <h3 class="text-xl font-semibold">Assign nurse</h3>
+                            <p class="text-white/70 text-sm mt-2">Use the bookings view to match talent to cases.</p>
+                            <button onclick="showSection('bookings')" class="btn btn-gradient btn-sm mt-4">Open
+                                bookings</button>
+                        </div>
+                        <div class="card bg-gradient-to-br from-emerald-500/20 to-blue-500/10 border-white/10">
+                            <p class="text-xs uppercase text-white/70">Compliance</p>
+                            <h3 class="text-xl font-semibold">Visit summaries</h3>
+                            <p class="text-white/70 text-sm mt-2">Ensure all visits have notes before archiving.</p>
+                        </div>
+                        <div class="card bg-gradient-to-br from-orange-500/20 to-pink-500/10 border-white/10">
+                            <p class="text-xs uppercase text-white/70">Hotline</p>
+                            <h3 class="text-xl font-semibold">Escalations</h3>
+                            <p class="text-white/70 text-sm mt-2">Tag urgent cases with the “priority” badge.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bookings Section -->
+                <section id="bookings-section" class="section hidden space-y-6">
+                    <div class="flex flex-wrap gap-4 justify-between items-center">
+                        <div>
+                            <p class="text-sm uppercase tracking-[0.4em] text-white/60">Bookings</p>
+                            <h2 class="text-3xl font-bold text-white">Bookings Management</h2>
+                        </div>
+                        <input type="text" id="searchBookings" placeholder="Search bookings..."
+                            class="px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-sm placeholder-white/50">
+                    </div>
+                    <div class="card bg-white/10 border-white/10">
+                        <div class="overflow-auto">
+                            <table class="table text-gray-900">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Customer</th>
+                                        <th>Service</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Assigned Nurse</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookingsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Nurses Section -->
+                <section id="nurses-section" class="section hidden space-y-6">
+                    <div class="flex flex-wrap gap-4 justify-between items-center">
+                        <div>
+                            <p class="text-sm uppercase tracking-[0.4em] text-white/60">Workforce</p>
+                            <h2 class="text-3xl font-bold text-white">Nurse Roster</h2>
+                        </div>
+                        <button onclick="showAddNurseModal()" class="btn btn-gradient btn-sm">+ Add Nurse</button>
+                    </div>
+                    <div id="nursesContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <p class="text-white/60">Loading...</p>
+                    </div>
+                </section>
+
+                <!-- Patients Section -->
+                <section id="patients-section" class="section hidden space-y-6">
+                    <div class="flex flex-wrap gap-4 justify-between items-center">
+                        <div>
+                            <p class="text-sm uppercase tracking-[0.4em] text-white/60">Families</p>
+                            <h2 class="text-3xl font-bold text-white">Patients Registry</h2>
+                        </div>
+                        <input type="text" id="searchPatients" placeholder="Search patients..."
+                            class="px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-sm placeholder-white/50">
+                    </div>
+                    <div class="card bg-white/10 border-white/10">
+                        <div class="overflow-auto">
+                            <table class="table text-gray-900">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                        <th>Address</th>
+                                        <th>Registered</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="patientsTableBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Activity Section -->
+                <section id="activity-section" class="section hidden space-y-6">
+                    <div>
+                        <p class="text-sm uppercase tracking-[0.4em] text-white/60">Audit trail</p>
+                        <h2 class="text-3xl font-bold text-white">System Activity Log</h2>
+                    </div>
+                    <div class="card bg-white/10 border-white/10">
+                        <div class="overflow-auto">
+                            <table class="table text-gray-900">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>User</th>
+                                        <th>Action</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activityTableBody">
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settings-section" class="section hidden space-y-6">
+                    <div>
+                        <p class="text-sm uppercase tracking-[0.4em] text-white/60">Profile</p>
+                        <h2 class="text-3xl font-bold text-white">Account Settings</h2>
+                    </div>
+                    <div class="card grid md:grid-cols-2 gap-8 bg-white/10 border-white/10">
+                        <div class="space-y-6">
+                            <div class="form-group">
+                                <label for="settingFullName">Full Name</label>
+                                <input type="text" id="settingFullName" placeholder="Your full name">
+                            </div>
+                            <div class="form-group">
+                                <label for="settingEmail">Email</label>
+                                <input type="email" id="settingEmail" placeholder="Your email" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="settingPhone">Phone</label>
+                                <input type="tel" id="settingPhone" placeholder="Your phone number">
+                            </div>
+                            <button onclick="saveSettings()" class="btn btn-gradient">Save Changes</button>
+                        </div>
+                        <div
+                            class="rounded-3xl bg-gradient-to-br from-blue-500/20 to-purple-500/10 border border-white/10 p-8">
+                            <p class="text-sm uppercase tracking-[0.4em] text-white/60">Need help?</p>
+                            <h3 class="text-2xl font-semibold mt-4">Concierge support</h3>
+                            <p class="text-white/70 mt-3">Ping the engineering desk for escalations, access issues, or
+                                compliance checks.</p>
+                            <div class="mt-6 space-y-1 text-white/80">
+                                <p>📞 +1 (555) 123-4567</p>
+                                <p>✉️ ops@myFamNurse.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Booking Details Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-2xl font-bold">Booking Details</h3>
+                <button onclick="closeModal('bookingModal')" class="text-2xl">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="bookingDetails"></div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('bookingModal')" class="btn btn-secondary btn-sm">Close</button>
+                <button onclick="saveBooking()" class="btn btn-primary btn-sm">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/auth-service.js"></script>
+    <script src="../js/booking-service.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            checkAuthorization(['admin', 'super_admin']);
+            loadDashboard();
+            updateUserDisplay();
+        });
+
+        function updateUserDisplay() {
+            const user = authService.getCurrentUser();
+            if (user) {
+                document.getElementById('userEmailDisplay').textContent = user.email;
+                db.collection('users').doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        document.getElementById('userNameDisplay').textContent = doc.data().fullName;
+                    }
+                });
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const stats = await bookingService.getStatistics();
+                document.getElementById('stat-total').textContent = stats.totalBookings;
+                document.getElementById('stat-pending').textContent = stats.pendingBookings;
+                document.getElementById('stat-completed').textContent = stats.completedBookings;
+                document.getElementById('stat-nurses').textContent = stats.activeNurses;
+                document.getElementById('stat-today').textContent = stats.todayBookings;
+
+                await loadRecentBookings();
+                await loadActivityFeed();
+                await loadBookings();
+                await loadNurses();
+                await loadPatients();
+                await loadActivityLog();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showNotification('Error loading dashboard data', 'error');
+            }
+        }
+
+        async function loadRecentBookings() {
+            try {
+                const bookings = await bookingService.getAllBookings();
+                const recent = bookings.slice(0, 5);
+                const container = document.getElementById('recentBookingsContainer');
+
+                container.innerHTML = recent.map(booking => `
+                    <div class="p-3 bg-white/5 rounded-2xl border border-white/10">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-white">${booking.customerName}</p>
+                                <p class="text-sm text-white/70">${booking.service}</p>
+                            </div>
+                            <span class="badge ${booking.status === 'completed' ? 'badge-success' :
+                        booking.status === 'assigned' ? 'badge-primary' :
+                            booking.status === 'confirmed' ? 'badge-warning' :
+                                'badge-gray'
+                    }">${booking.status}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading recent bookings:', error);
+            }
+        }
+
+        async function loadActivityFeed() {
+            try {
+                const snapshot = await db.collection('activity_logs')
+                    .orderBy('timestamp', 'desc')
+                    .limit(10)
+                    .get();
+
+                const container = document.getElementById('activityFeedContainer');
+                const activities = [];
+
+                snapshot.forEach(doc => {
+                    activities.push(doc.data());
+                });
+
+                container.innerHTML = activities.map(activity => `
+                    <div class="p-3 bg-white/5 rounded-2xl border border-white/10">
+                        <p class="font-semibold text-white text-sm">${activity.description}</p>
+                        <p class="text-xs text-white/60 mt-1">${formatDateTime(activity.timestamp)}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading activity feed:', error);
+            }
+        }
+
+        async function loadBookings() {
+            try {
+                const bookings = await bookingService.getAllBookings();
+                const tbody = document.getElementById('bookingsTableBody');
+
+                tbody.innerHTML = bookings.map(booking => `
+                    <tr>
+                        <td>${booking.id.substring(0, 8)}</td>
+                        <td>${booking.customerName}</td>
+                        <td>${booking.service}</td>
+                        <td>${formatDate(booking.preferredDate)}</td>
+                        <td><span class="badge ${booking.status === 'completed' ? 'badge-success' :
+                        booking.status === 'assigned' ? 'badge-primary' :
+                            booking.status === 'confirmed' ? 'badge-warning' :
+                                'badge-gray'
+                    }">${booking.status}</span></td>
+                        <td>${booking.assignedNurse ? booking.assignedNurse.fullName : 'Unassigned'}</td>
+                        <td>
+                            <button onclick="openBookingModal('${booking.id}')" class="btn btn-primary btn-sm">View</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+            }
+        }
+
+        async function loadNurses() {
+            try {
+                const snapshot = await db.collection('users').where('role', '==', 'nurse').get();
+                const container = document.getElementById('nursesContainer');
+                const nurses = [];
+
+                snapshot.forEach(doc => {
+                    nurses.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (!nurses.length) {
+                    container.innerHTML = '<p class="text-white/60">No nurses found.</p>';
+                    return;
+                }
+
+                container.innerHTML = nurses.map(nurse => `
+                    <div class="card bg-white/10 border-white/10">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="avatar">${nurse.fullName ? nurse.fullName.charAt(0) : '👩‍⚕️'}</div>
+                            <div>
+                                <p class="font-semibold text-white">${nurse.fullName || 'Unnamed Nurse'}</p>
+                                <p class="text-sm text-white/60">${nurse.email}</p>
+                            </div>
+                        </div>
+                        <p class="text-white/70 text-sm">${nurse.specialty || 'General care'} • ${nurse.city || 'Colombo'}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading nurses:', error);
+            }
+        }
+
+        async function loadPatients() {
+            try {
+                const bookings = await bookingService.getAllBookings();
+                const tbody = document.getElementById('patientsTableBody');
+
+                tbody.innerHTML = bookings.map(booking => `
+                    <tr>
+                        <td>${booking.customerName}</td>
+                        <td>${booking.phone}</td>
+                        <td>${booking.address}</td>
+                        <td>${formatDate(booking.preferredDate)}</td>
+                        <td><button onclick="openBookingModal('${booking.id}')" class="btn btn-secondary btn-sm">View</button></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading patients:', error);
+            }
+        }
+
+        async function loadActivityLog() {
+            try {
+                const snapshot = await db.collection('activity_logs').orderBy('timestamp', 'desc').limit(25).get();
+                const tbody = document.getElementById('activityTableBody');
+                const logs = [];
+
+                snapshot.forEach(doc => logs.push(doc.data()));
+
+                tbody.innerHTML = logs.map(log => `
+                    <tr>
+                        <td>${formatDateTime(log.timestamp)}</td>
+                        <td>${log.user || 'System'}</td>
+                        <td>${log.action}</td>
+                        <td>${log.description}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading activity log:', error);
+            }
+        }
+
+        function showSection(sectionId, triggerEl) {
+            document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+            const target = document.getElementById(`${sectionId}-section`);
+            if (target) {
+                target.classList.remove('hidden');
+            }
+
+            const titles = {
+                dashboard: 'Dashboard',
+                bookings: 'Bookings Management',
+                nurses: 'Nurse Roster',
+                patients: 'Patients Registry',
+                activity: 'System Activity Log',
+                settings: 'Account Settings'
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionId] || 'Dashboard';
+
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            if (triggerEl) {
+                triggerEl.classList.add('active');
+            } else {
+                const fallback = document.querySelector(`[data-nav="${sectionId}"]`);
+                if (fallback) {
+                    fallback.classList.add('active');
+                }
+            }
+        }
+
+        async function logoutUser() {
+            if (!confirm('Log out of the admin console?')) {
+                return;
+            }
+
+            try {
+                showLoading('Signing out...');
+                await authService.logout();
+                hideLoading();
+                window.location.href = '../pages/login.html';
+            } catch (error) {
+                hideLoading();
+                showNotification('Error logging out: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>
