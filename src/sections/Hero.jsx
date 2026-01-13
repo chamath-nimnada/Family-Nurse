@@ -46,7 +46,7 @@ const Hero = () => {
                     <div className="relative">
                         <div className="absolute -inset-4 bg-primary/10 rounded-3xl blur-2xl"></div>
                         <img
-                            src="https://img.freepik.com/free-vector/health-professional-collection_23-2148533764.jpg?semt=ais_hybrid&w=740&q=80"
+                            src="https://img.freepik.com/free-vector/health-professional-collection_23-2148533764.jpg"
                             alt="Nurse Illustration"
                             className="relative w-full h-auto rounded-3xl shadow-2xl"
                         />
