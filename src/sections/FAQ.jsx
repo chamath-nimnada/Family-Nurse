@@ -4,25 +4,13 @@ import { useTranslation } from 'react-i18next';
 
 const FAQ = () => {
     const { t } = useTranslation();
-    const [activeIndex, setActiveIndex] = useState(null); // All items closed by default
+    const [activeIndex, setActiveIndex] = useState(null);
 
     const faqs = [
-        {
-            question: "Are your nurses qualified?",
-            answer: "Yes, all our nurses are board-certified and undergo rigorous background checks and clinical assessments before joining our team."
-        },
-        {
-            question: "Do you bring your own equipment?",
-            answer: "We bring necessary medical consumables. Specialized equipment should be discussed beforehand to ensure compatibility with patient needs."
-        },
-        {
-            question: "How do I make a payment?",
-            answer: "We offer multiple secure payment options including credit/debit cards, online transfers, and insurance-integrated billing systems."
-        },
-        {
-            question: "Is emergency service available?",
-            answer: "While we provide 24/7 home care, for life-threatening emergencies, we always recommend calling emergency services (1990) immediately."
-        }
+        { question: t('q1'), answer: t('a1') },
+        { question: t('q2'), answer: t('a2') },
+        { question: t('q3'), answer: t('a3') },
+        { question: t('q4'), answer: t('a4') }
     ];
 
     return (
@@ -57,9 +45,7 @@ const FAQ = () => {
                             {activeIndex === index && (
                                 <div className="px-8 pb-8 animate-in slide-in-from-top-4 duration-500">
                                     <div className="h-px bg-slate-100 mb-6" />
-                                    <p className="text-slate-600 leading-relaxed text-lg font-medium">
-                                        {faq.answer}
-                                    </p>
+                                    <p className="text-slate-600 leading-relaxed text-lg font-medium">{faq.answer}</p>
                                 </div>
                             )}
                         </div>

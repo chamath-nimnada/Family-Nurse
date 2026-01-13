@@ -31,6 +31,9 @@ const BookingWizard = ({ onBack }) => {
         notes: ''
     });
 
+    // Common input style for distinct look
+    const inputClasses = "w-full p-4 bg-white border-2 border-slate-300 rounded-2xl shadow-sm outline-none focus:border-primary focus:ring-4 focus:ring-teal-50 transition-all font-medium text-slate-700 placeholder:text-slate-400";
+
     const steps = [
         { id: 1, name: 'Service', icon: <Stethoscope size={20} /> },
         { id: 2, name: 'Schedule', icon: <Calendar size={20} /> },
@@ -86,12 +89,12 @@ const BookingWizard = ({ onBack }) => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/50 pt-28 pb-16 px-4">
+        <div className="min-h-screen pt-28 pb-16 px-4">
             <div className="max-w-4xl mx-auto">
 
                 {/* Progress Stepper */}
                 <div className="relative flex justify-between items-center mb-16 px-4 max-w-2xl mx-auto">
-                    <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 -translate-y-1/2" />
+                    <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-300 -z-10 -translate-y-1/2" />
                     <div
                         className="absolute top-1/2 left-0 h-1 bg-primary -z-10 -translate-y-1/2 transition-all duration-500 ease-out"
                         style={{ width: `${((step - 1) / (steps.length - 1)) * 100}%` }}
@@ -108,7 +111,7 @@ const BookingWizard = ({ onBack }) => {
                 </div>
 
                 {/* Content Card */}
-                <div className="bg-white rounded-[2rem] border-2 border-slate-200 shadow-xl p-6 md:p-12 min-h-[550px] flex flex-col">
+                <div className="bg-white rounded-[2rem] border-2 border-white shadow-xl shadow-teal-900/5 p-6 md:p-12 min-h-[550px] flex flex-col">
 
                     <div className="flex-1">
                         {/* STEP 1: SERVICE */}
@@ -121,7 +124,7 @@ const BookingWizard = ({ onBack }) => {
                                         <button
                                             key={s}
                                             onClick={() => setFormData({ ...formData, service: s })}
-                                            className={`p-5 text-left border-2 rounded-2xl font-bold transition-all ${formData.service === s ? 'border-primary bg-teal-50 text-primary ring-4 ring-teal-50' : 'border-slate-200 hover:border-slate-400 text-slate-600'}`}
+                                            className={`p-5 text-left border-2 rounded-2xl font-bold transition-all shadow-sm ${formData.service === s ? 'border-primary bg-teal-50 text-primary ring-4 ring-teal-50' : 'border-slate-300 bg-white hover:border-primary hover:shadow-md text-slate-700'}`}
                                         >
                                             {s}
                                         </button>
@@ -142,7 +145,7 @@ const BookingWizard = ({ onBack }) => {
                                         </label>
                                         <input
                                             type="date"
-                                            className="w-full p-4 border-2 border-slate-200 rounded-2xl outline-none focus:border-primary transition-colors bg-slate-50"
+                                            className={inputClasses}
                                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                                             value={formData.date}
                                         />
@@ -156,7 +159,7 @@ const BookingWizard = ({ onBack }) => {
                                                 <button
                                                     key={t}
                                                     onClick={() => setFormData({ ...formData, time: t })}
-                                                    className={`p-3 text-sm border-2 rounded-xl font-bold transition-all ${formData.time === t ? 'bg-primary text-white border-primary shadow-md' : 'border-slate-200 hover:border-slate-400 text-slate-600'}`}
+                                                    className={`p-3 text-sm border-2 rounded-xl font-bold transition-all shadow-sm ${formData.time === t ? 'bg-primary text-white border-primary shadow-md ring-2 ring-teal-100' : 'bg-white border-slate-300 hover:border-primary text-slate-700'}`}
                                                 >
                                                     {t}
                                                 </button>
@@ -174,20 +177,20 @@ const BookingWizard = ({ onBack }) => {
                                 <p className="text-slate-500 mb-10">Tell us about the person receiving care</p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700">Patient Name *</label>
-                                        <input type="text" placeholder="Full Name" className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 outline-none focus:border-primary" value={formData.patientName} onChange={(e) => setFormData({ ...formData, patientName: e.target.value })} />
+                                        <label className="text-sm font-bold text-slate-700 ml-1">Patient Name *</label>
+                                        <input type="text" placeholder="Full Name" className={inputClasses} value={formData.patientName} onChange={(e) => setFormData({ ...formData, patientName: e.target.value })} />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700">Age</label>
-                                        <input type="number" placeholder="Years" className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 outline-none focus:border-primary" value={formData.patientAge} onChange={(e) => setFormData({ ...formData, patientAge: e.target.value })} />
+                                        <label className="text-sm font-bold text-slate-700 ml-1">Age</label>
+                                        <input type="number" placeholder="Years" className={inputClasses} value={formData.patientAge} onChange={(e) => setFormData({ ...formData, patientAge: e.target.value })} />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700">Phone Number *</label>
-                                        <input type="tel" placeholder="+94 XX XXX XXXX" className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 outline-none focus:border-primary" value={formData.patientPhone} onChange={(e) => setFormData({ ...formData, patientPhone: e.target.value })} />
+                                        <label className="text-sm font-bold text-slate-700 ml-1">Phone Number *</label>
+                                        <input type="tel" placeholder="+94 XX XXX XXXX" className={inputClasses} value={formData.patientPhone} onChange={(e) => setFormData({ ...formData, patientPhone: e.target.value })} />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700">Email (Optional)</label>
-                                        <input type="email" placeholder="example@mail.com" className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 outline-none focus:border-primary" value={formData.patientEmail} onChange={(e) => setFormData({ ...formData, patientEmail: e.target.value })} />
+                                        <label className="text-sm font-bold text-slate-700 ml-1">Email (Optional)</label>
+                                        <input type="email" placeholder="example@mail.com" className={inputClasses} value={formData.patientEmail} onChange={(e) => setFormData({ ...formData, patientEmail: e.target.value })} />
                                     </div>
                                 </div>
                             </div>
@@ -200,22 +203,22 @@ const BookingWizard = ({ onBack }) => {
                                 <p className="text-slate-500 mb-10">Where should the nurse provide the service?</p>
                                 <div className="space-y-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700">Street Address *</label>
-                                        <input type="text" placeholder="123/A, Main St..." className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 outline-none focus:border-primary" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
+                                        <label className="text-sm font-bold text-slate-700 ml-1">Street Address *</label>
+                                        <input type="text" placeholder="123/A, Main St..." className={inputClasses} value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-slate-700">City *</label>
-                                            <input type="text" placeholder="Colombo" className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 outline-none focus:border-primary" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
+                                            <label className="text-sm font-bold text-slate-700 ml-1">City *</label>
+                                            <input type="text" placeholder="Colombo" className={inputClasses} value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-slate-700">ZIP Code</label>
-                                            <input type="text" placeholder="XXXXX" className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 outline-none focus:border-primary" value={formData.zip} onChange={(e) => setFormData({ ...formData, zip: e.target.value })} />
+                                            <label className="text-sm font-bold text-slate-700 ml-1">ZIP Code</label>
+                                            <input type="text" placeholder="XXXXX" className={inputClasses} value={formData.zip} onChange={(e) => setFormData({ ...formData, zip: e.target.value })} />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700">Special Notes</label>
-                                        <textarea className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 h-28 outline-none focus:border-primary" placeholder="Any special medical conditions or entry instructions?" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })}></textarea>
+                                        <label className="text-sm font-bold text-slate-700 ml-1">Special Notes</label>
+                                        <textarea className={`${inputClasses} h-28 resize-none`} placeholder="Any special medical conditions or entry instructions?" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })}></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -253,7 +256,7 @@ const BookingWizard = ({ onBack }) => {
                                     </div>
                                 </div>
 
-                                <div className="mt-6 flex items-start gap-3 bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-sm">
+                                <div className="mt-6 flex items-start gap-3 bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-sm font-medium">
                                     <AlertCircle size={18} className="mt-0.5 shrink-0" />
                                     <p>By submitting, you agree to our Terms of Service. A coordinator will call you within 30 minutes to confirm your nurse assignment.</p>
                                 </div>
@@ -265,7 +268,7 @@ const BookingWizard = ({ onBack }) => {
                     <div className="mt-12 pt-8 border-t-2 border-slate-100 flex justify-between gap-4">
                         <button
                             onClick={handleBack}
-                            className="px-6 md:px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-700 flex items-center gap-2 hover:bg-slate-50 hover:border-slate-400 transition-all active:scale-95"
+                            className="px-6 md:px-10 py-4 rounded-2xl border-2 border-slate-300 bg-white font-bold text-slate-700 flex items-center gap-2 hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
                         >
                             <ChevronLeft size={20} /> Back
                         </button>
