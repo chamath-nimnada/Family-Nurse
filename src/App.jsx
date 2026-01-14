@@ -1,8 +1,15 @@
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore'; //
 import { ArrowUpRight, Heart, Phone } from 'lucide-react';
 import { Suspense, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import AdminDashboard from './components/AdminDashboard';
+import AuthPage from './components/AuthPage';
 import BookingWizard from './components/BookingWizard';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
+import NurseDashboard from './components/NurseDashboard'; //
+import { auth, db } from './firebase/config';
 import './i18n/config';
 import FAQ from './sections/FAQ';
 import Hero from './sections/Hero';
@@ -21,48 +28,105 @@ const LoadingScreen = () => (
 );
 
 function App() {
-  const [view, setView] = useState('home');
+  const { t } = useTranslation();
+  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Lazy State Initialization + Redirect Handling
+  const [view, setView] = useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectedPath = urlParams.get('p');
+
+    if (redirectedPath) {
+      const isProd = import.meta.env.PROD;
+      const base = isProd ? '/Family-Nurse' : '';
+      window.history.replaceState(null, null, base + redirectedPath);
+      if (redirectedPath.includes('/admin')) return 'admin';
+    }
+
+    const path = window.location.pathname;
+    if (path.endsWith('/admin') || path.endsWith('/admin/')) {
+      return 'admin';
+    }
+    return 'home';
+  });
+
   useEffect(() => {
+    // Monitor Auth Status and fetch role-based data
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+        if (userDoc.exists()) {
+          setUser({ id: firebaseUser.uid, ...userDoc.data() });
+        }
+      } else {
+        setUser(null);
+      }
+    });
+
     const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
   }, []);
 
   const changeView = (newView) => {
     setView(newView);
+    const isProd = import.meta.env.PROD;
+    const base = isProd ? '/Family-Nurse' : '';
+    const newPath = newView === 'admin' ? `${base}/admin` : `${base}/`;
+
+    window.history.pushState({}, '', newPath);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setUser(null);
+    changeView('home');
   };
 
   if (isLoading) return <LoadingScreen />;
 
+  // Admin / Nurse / Auth Logic
+  if (view === 'admin') {
+    if (!user) {
+      return (
+        <AuthPage
+          onBack={() => changeView('home')}
+          onLoginSuccess={(userData) => setUser(userData)}
+        />
+      );
+    }
+
+    if (user.role === 'admin') {
+      return <AdminDashboard user={user} onLogout={handleLogout} />;
+    } else if (user.role === 'nurse') {
+      return <NurseDashboard user={user} onLogout={handleLogout} />; //
+    }
+  }
+
   return (
     <Suspense fallback={<LoadingScreen />}>
-      {/* Global greeny-mint background */}
-      <div className="min-h-screen bg-[#e6f7f5] selection:bg-teal-100 selection:text-primary">
+      <div className="min-h-screen bg-[#e6f7f5] selection:bg-teal-100 selection:text-primary transition-colors duration-500">
         <Navbar
-          onBookNow={() => changeView('booking')}
+          onBookNow={() => setView('booking')}
           onHome={() => changeView('home')}
         />
 
         {view === 'home' ? (
           <main className="animate-in fade-in duration-1000">
-            {/* Hero on the main background */}
-            <div id="home"><Hero onBookNow={() => changeView('booking')} /></div>
-
-            {/* Services on the background - cards inside will be white */}
-            <div id="services" className="py-12"><ServicesGrid /></div>
-
-            {/* How It Works on the background */}
+            <div id="home">
+              <Hero onBookNow={() => setView('booking')} />
+            </div>
+            <div id="services">
+              <ServicesGrid />
+            </div>
             <HowItWorks />
-
-            {/* FAQ on the background */}
             <FAQ />
-
-            {/* Testimonials on the background */}
             <Testimonials />
 
-            {/* CTA Section */}
             <section className="py-24 px-4">
               <div className="max-w-6xl mx-auto">
                 <div className="bg-primary rounded-[3rem] p-12 md:p-24 text-center relative overflow-hidden shadow-2xl shadow-teal-900/20 border-4 border-white">
@@ -72,10 +136,10 @@ function App() {
                   </h2>
                   <div className="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
                     <button
-                      onClick={() => changeView('booking')}
+                      onClick={() => setView('booking')}
                       className="bg-slate-900 text-white px-12 py-5 rounded-2xl font-bold text-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group shadow-xl"
                     >
-                      Book Your Nurse <ArrowUpRight className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                      {t('book_nurse')} <ArrowUpRight className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                     </button>
                     <button className="bg-white/20 backdrop-blur-md text-white border border-white/40 px-12 py-5 rounded-2xl font-bold text-xl hover:bg-white/30 transition-all flex items-center justify-center gap-3">
                       <Phone size={24} /> 1-800-NURSE
